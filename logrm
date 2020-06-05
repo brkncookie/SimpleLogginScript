@@ -1,0 +1,55 @@
+# !/bin/bash
+
+bckup () {
+
+archivedir="$HOME/.deleted-files"
+copy="$(which cp) -R"
+
+if [ ! -d $archivedir ] ; then
+  if [ ! -w $HOME ] ; then
+    echo "$0 failed: can't create $archivedir in $HOME" >&2
+    exit 1
+  fi
+  mkdir $archivedir
+  chmod 700 $archivedir
+fi
+
+for arg
+do
+  newname="$archivedir/$(date "+%m.%d.%H.%M.%S").$(basename "$arg")"
+  if [ -f "$arg" -o -d "$arg" ] ; then
+    $copy "$arg" "$newname"
+  fi
+done
+}
+realrm="$(which rm) -v"
+if [ $# -eq 0 ] ; then
+  exec $realrm
+  exit 1
+fi
+while getopts "fiPRrWd" opt ; do
+  case $opt in
+    f ) remdir="$realrm -rf" ;;
+    * ) flags="-$opt"
+  esac
+done
+shift $(( $OPTIND - 1 ))
+
+
+if [ -d "$@" ] ; then
+ if  [ -z "$remdir" ] ; then
+   echo "Usage: Cannot remove $@ : it's a directory employ -f opt to remove it"
+  exit 0
+else
+  logger  -p user.notice -t "Directory deletion process"  "${USER} : $@"
+  bckup "$@"
+  exec $remdir $flags "$@"
+  exit 0
+fi
+fi
+
+logger -p user.notice -t "deletion process"  "${USER}: $@"
+  bckup "$@"
+ exec $realrm $flags "$@"
+
+exit 0

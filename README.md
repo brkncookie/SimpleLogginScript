@@ -6,7 +6,7 @@ This is my first time creating a repository for a project and i did want to put 
 The purpose of this simple shell script is to log the deletion process of files in the simplest way possible
 
 ## Pre-requisites
-you'll first need the logger utility That is to sned logs to the syslog daemon.
+you'll first need the logger utility That is to send logs to the syslog daemon.
 I tested this script with Rsyslog and it will also work with other logging systems that use syslog protocol
 and you may need to adjust your system logging configurations because this script uses the ```user.notice``` severity/priority
 
