@@ -1,19 +1,13 @@
 #!/bin/bash
 
-# unrm--Searches the deleted files archive for the specified file or
-#   directory. If there is more than one matching result, it shows a list 
-#   of results ordered by timestamp and lets the user specify 
-#   which one to restore.
 
 archivedir="$HOME/.deleted-files"
 realrm="$(which rm)"
 move="$(which mv)"
 
 dest=$(pwd)
-
-if [ ! -d $archivedir ] ; then
-  echo "$0: No deleted files directory: nothing to unrm" >&2 ; exit 1
-fi
+# see if there's no dir or if it's unaccessible
+[ ! -d $archivedir ] &&   echo "$0: No deleted files directory: nothing to unrm" >&2 && exit 1
 
 cd $archivedir
 
@@ -21,11 +15,11 @@ cd $archivedir
 if [ $# -eq 0 ] ; then
   echo "Contents of your deleted files archive (sorted by date):"
   ls -FC | sed -e 's/\([[:digit:]][[:digit:]]\.\)\{5\}//g' \
-    -e 's/^/  /' 
+    -e 's/^/  /'
   exit 0
 fi
 
-# Otherwise, we must have a user-specified pattern to work with. 
+# Otherwise, we must have a user-specified pattern to work with.
 #   Let's see if the pattern matches more than one file or directory
 #   in the archive.
 
@@ -41,12 +35,12 @@ if [ $matches -gt 1 ] ; then
   index=1
   for name in $(ls -td *"$1")
   do
-    datetime="$(echo $name | cut -c1-14| \
-      awk -F. '{ print $5"/"$4" at "$3":"$2":"$1 }')"
-    filename="$(echo $name | cut -c16-)"
+    datetime="$(echo ${name:0:14} | \
+      awk -F. '{ print $1"/"$2" at "$3":"$4":"$5 }')"
+    filename="$(echo ${name:15})"
     if [ -d $name ] ; then
      filecount="$(ls $name | wc -l | sed 's/[^[:digit:]]//g')"
-      echo " $index)   $filename  (contents = ${filecount} items," \ 
+      echo " $index)   $filename  (contents = ${filecount} items," \
            " deleted = $datetime)"
     else
       size="$(ls -sdk1 $name | awk '{print $1}')"
@@ -72,7 +66,7 @@ if [ $matches -gt 1 ] ; then
   fi
 
   restore="$(ls -td1 *"$1" | sed -n "${desired}p")"
-  
+
   if [ -e "$dest/$1" ] ; then
     echo "\"$1\" already exists in this directory. Cannot overwrite." >&2
     exit 1
@@ -82,9 +76,9 @@ if [ $matches -gt 1 ] ; then
   $move "$restore" "$dest/$1"
   echo "done."
 
-  echo -n "Delete the additional copies of this file? [y] " 
+  echo -n "Delete the additional copies of this file? [y] "
   read answer
-  
+
   if [ ${answer:=y} = "y" ] ; then
     $realrm -rf *"$1"
     echo "deleted."
@@ -99,7 +93,7 @@ else
 
   restore="$(ls -d *"$1")"
 
-  echo -n "Restoring file \"$1\" ... " 
+  echo -n "Restoring file \"$1\" ... "
   $move "$restore" "$dest/$1"
   echo "done."
 fi
