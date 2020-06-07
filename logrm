@@ -2,20 +2,23 @@
 
 bckup () {
 
-archivedir="$HOME/.deleted-files"
+archivedir="$HOME/.deleted-files" # the deleted file archive
 copy="$(which cp) -R"
-
+#first check if we're able to find the archive
+#if not can we access the home directory ?
 if [ ! -d $archivedir ] ; then
   if [ ! -w $HOME ] ; then
     echo "$0 failed: can't create $archivedir in $HOME" >&2
     exit 1
   fi
+#if it doesn't exist but we can access the home directory then just create the hidden archive
   mkdir $archivedir
   chmod 700 $archivedir
 fi
 
 for arg
 do
+#this is the format the deleted file will be stored as
   newname="$archivedir/$(date "+%m.%d.%H.%M.%S").$(basename "$arg")"
   if [ -f "$arg" -o -d "$arg" ] ; then
     $copy "$arg" "$newname"
@@ -23,10 +26,12 @@ do
 done
 }
 realrm="$(which rm) -v"
+# if no arguments is given then let rm  output the error and exit
 if [ $# -eq 0 ] ; then
   exec $realrm
   exit 1
 fi
+# here we pass all the normal rm options as default and we add or modified ones
 while getopts "fiPRrWd" opt ; do
   case $opt in
     f ) remdir="$realrm -rf" ;;
@@ -35,7 +40,7 @@ while getopts "fiPRrWd" opt ; do
 done
 shift $(( $OPTIND - 1 ))
 
-
+#check if it's a directory , if so then advice the user to use the apropriate option
 if [ -d "$@" ] ; then
  if  [ -z "$remdir" ] ; then
    echo "Usage: Cannot remove $@ : it's a directory employ -f opt to remove it"
@@ -47,7 +52,7 @@ else
   exit 0
 fi
 fi
-
+# the simple code for the file(s)
 logger -p user.notice -t "deletion process"  "${USER}: $@"
   bckup "$@"
  exec $realrm $flags "$@"
