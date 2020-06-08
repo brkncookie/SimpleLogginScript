@@ -1,11 +1,11 @@
 #!/bin/bash
 
-
+#the location of the archive and some CMD we'll use
 archivedir="$HOME/.deleted-files"
 realrm="$(which rm)"
 move="$(which mv)"
-
 dest=$(pwd)
+
 # see if there's no dir or if it's unaccessible
 [ ! -d $archivedir ] &&   echo "$0: No deleted files directory: nothing to unrm" >&2 && exit 1
 
@@ -29,12 +29,14 @@ if [ $matches -eq 0 ] ; then
   echo "No match for \"$1\" in the deleted file archive." >&2
   exit 1
 fi
-
+#the complex part of the script is this part
 if [ $matches -gt 1 ] ; then
   echo "More than one file or directory match in the archive:"
+#this variable is used as the index in the for loop for how many found files
   index=1
   for name in $(ls -td ??.??.??.??.??."$1")
   do
+#we'll just slice and dice here
     datetime="$(echo ${name:0:14} | \
       awk -F. '{ print $1"/"$2" at "$3":"$4":"$5 }')"
     filename="$(echo ${name:15})"
@@ -48,12 +50,13 @@ if [ $matches -gt 1 ] ; then
     fi
     index=$(( $index + 1))
   done
+#now we're being interactive
   echo ""
   read -p "Which version of $1 do you want to restore ('0' to quit)? [1] : " desired
   if [ ! -z "$(echo $desired | sed 's/[[:digit:]]//g')" ] ; then
     echo "$0: Restore canceled by user: invalid input." >&2
     exit 1
-  fij
+  fi
 
   if [ ${desired:=1} -ge $index ] ; then
     echo "$0: Restore canceled by user: index value too big." >&2
