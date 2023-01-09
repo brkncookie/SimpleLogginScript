@@ -18,5 +18,5 @@ $ echo "user.notice   /var/log/del.log" >> /etc/rsyslog.conf
 ```
 ## Usage
 I use this script as a wrapper , instead of calling ```rm``` ,
-i call this script and let it log the events, back the file(s) up and  then the script itself call ```rm``` to remove the file(s).
+i call this script and let it log the events, back the file(s) up and  then the script itself call ```rm``` to remove the file(s). 
 
